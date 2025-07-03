@@ -2,6 +2,7 @@ import unittest
 import random
 
 from shamir import Share, Reconstruct
+from operations import add_shares
 
 
 class TestShamir(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestShamir(unittest.TestCase):
         reconstructed = Reconstruct(pp, subset)
         print(f"Reconstructed secret: {reconstructed}")
         self.assertEqual(reconstructed, x)
-        print(f"Secret correctly reconstructed!")
+        print("Secret correctly reconstructed!")
 
     def test_small_field(self):
         self.run_shamir(pp=17, x=5, n=6, t=3, label="SMALL FIELD")
@@ -37,6 +38,27 @@ class TestShamir(unittest.TestCase):
 
     def test_max_secret(self):
         self.run_shamir(pp=257, x=256, n=7, t=3, label="SECRET = p - 1")
+    
+    def test_add_shares(self):
+        pp = 103 
+        n = 5
+        t = 3
+        x = 33
+        y = 42
+        expected = ( x + y ) % pp
+
+        x_shares = Share(pp,x,n,n)
+        y_shares = Share(pp,y,n,n)
+
+        z_shares = add_shares(pp, x_shares, y_shares)
+        recovered = Reconstruct(pp, z_shares)
+
+        print(f"\n--- ADDITION OF SHARES TEST ---")
+        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        self.assertEqual(recovered, expected)
+        print("Secret correctly reconstructed!")
+
+
 
 
 if __name__ == "__main__":
