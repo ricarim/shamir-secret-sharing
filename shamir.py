@@ -72,19 +72,3 @@ def lagrange_interpolation(pp, t_shares):
     return secret
 
 
-pp = 17
-x=2
-y=9
-sharesX = Share(pp,x,5,3)
-sharesY = Share(pp,y,5,3)
-
-sharesZ = []
-for (iX,yX), (iY, yY) in zip(sharesX, sharesY):
-    if iX != iY:
-        raise ValueError("Share x-coordinates must match.")
-    zi = (yX + yY) % pp
-    sharesZ.append((iX, zi))
-
-recoveredZ = Reconstruct(pp, sharesZ)
-print(f"x + y = {x} + {y} = {recoveredZ} mod {pp}")
-
