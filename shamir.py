@@ -1,18 +1,30 @@
+"""
+Shamir Secret Sharing Scheme 
+
+Based on:
+  Daniel Kales, "Secret Sharing", Graz University of Technology.
+  https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
+
+Implements:
+  - Share(pp, x, n, t): splits a secret x into n shares with reconstruction threshold t
+  - Reconstruct(pp, shares): reconstructs the original secret using Lagrange interpolation
+
+Note:
+  - The implementation follows the description in Scheme 3 of the reference
+  - All arithmetic is performed in the finite field GF(pp), where pp is a user-defined prime.
+"""
+
 import random
 
-
-def Gen():
-    pp = 17
-    return pp
-
-
+# Gen() is not implemented because the field prime 'pp' must be defined by the user in advance.
+  
 def Share(pp, x, n, t):
     if n < t:
         raise ValueError("The number of shares 'n' has to be higher or equal to the treshold 't'.")
-    if not (0 <= x <= pp-1):
+    if not (0 <= x < pp):
         raise ValueError("The secret 'x' has to be an element of the finite field 'F_pp'.")
     if pp <= n: 
-        raise ValueError("The size of the field 'F_pp' must be greater than the number of shares 'n'.")
+        raise ValueError("The size of the finite field 'F_pp' must be greater than the number of shares 'n'.")
 
     coeffs = [x]
 
@@ -30,53 +42,34 @@ def Share(pp, x, n, t):
 
     return shares
 
-
-
 def Reconstruct(pp, t_shares):
-    for i in range(len(t_shares)):
-        xi, yi = t_shares[i]
-        if not (0 <= yi <= pp-1): 
+    for _, yi in t_shares:
+        if not (0 <= yi < pp): 
             raise ValueError(f"The share 'y_i'={yi} has to be an element of the finite field 'F_pp'.")
 
     return lagrange_interpolation(pp, t_shares)
         
-        
-
 def lagrange_interpolation(pp, t_shares):
     secret = 0
 
     for i in range(len(t_shares)):
         xi, yi = t_shares[i]
 
-        numerator = 1
-        denominator = 1
+        num = 1
+        denom = 1
         for j in range(len(t_shares)):
-            if j == i:
+            if i == j:
                 continue
             xj, _ = t_shares[j]
-            numerator = (numerator * (-xj)) % pp
-            denominator = (denominator * (xi - xj)) % pp
+            num = (num * (-xj)) % pp
+            denom = (denom * (xi - xj)) % pp
 
-        inv_denominator = pow(denominator, -1, pp)
-        lagrange_coeff = (numerator * inv_denominator) % pp
+        denom_inv = pow(denom, -1, pp)
+        li = (num * denom_inv) % pp
 
-        term = (yi * lagrange_coeff) % pp
-        secret = (secret + term) % pp
+        secret = (secret + yi * li) % pp
 
     return secret
-
-
-
-
-pp = gen()
-shares = share(pp, 11 , 5, 3)
-for s in shares:
-    print(s)
-
-
-subset = random.sample(shares, 3)
-reconstruct = reconstruct(pp, subset)
-print(reconstruct)
 
 
 
