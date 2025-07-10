@@ -2,7 +2,7 @@ import unittest
 import random
 
 from shamir import Share, Reconstruct
-from operations import add_shares
+from operations import add_shares, mult_shares
 
 
 class TestShamir(unittest.TestCase):
@@ -86,10 +86,68 @@ class TestShamir(unittest.TestCase):
 
         z_shares = add_shares(pp, x_subset, y_subset)
         recovered = Reconstruct(pp, z_shares) 
+
         print(f"\n--- ADD_SHARES WITH SUBSET (t={t}) ---")
         print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
+
+    def test_mult_shares_no_degree_reduction_error(self):
+        """
+        Test that multiplying two Shamir sharings using only t shares (with matching indices) 
+        doesn't work because the degree of the polynomial has grown.
+        """
+
+        pp = 67
+        n = 5
+        t = 2 
+        x = 3
+        y = 4 
+        expected = ( x * y ) % pp
+
+        x_shares = Share(pp, x, n, t)
+        y_shares = Share(pp, y, n, t)
+
+        subset_indices = sorted(random.sample(range(1, n+1), t))
+        x_subset = sorted([s for s in x_shares if s[0] in subset_indices], key=lambda s: s[0])
+        y_subset = sorted([s for s in y_shares if s[0] in subset_indices], key=lambda s: s[0])
+
+        z_shares = mult_shares(pp, x_subset, y_subset)
+        recovered = Reconstruct(pp, z_shares)
+
+        print(f"\n--- MULT_SHARES WITH SUBSET (t={t}) ---")
+        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        self.assertNotEqual(recovered, expected)
+        print("Secret NOT reconstructed because the polynomial degree has grown and now it needs (2*t - 1) unique shares to reconstruct the secret!")
+
+    def test_mult_shares_no_degree_reduction_correct(self):
+        """
+        Test that multiplying two Shamir sharings using (2*t-1) shares (with matching indices) 
+        to reconstruct the secret gives the correct secret.
+        """
+
+        pp = 67
+        n = 5
+        t = 2 
+        x = 3
+        y = 4 
+        expected = ( x * y ) % pp
+
+        x_shares = Share(pp, x, n, t)
+        y_shares = Share(pp, y, n, t)
+
+        subset_indices = sorted(random.sample(range(1, n+1), 2*t-1))
+        x_subset = sorted([s for s in x_shares if s[0] in subset_indices], key=lambda s: s[0])
+        y_subset = sorted([s for s in y_shares if s[0] in subset_indices], key=lambda s: s[0])
+
+        z_shares = mult_shares(pp, x_subset, y_subset)
+        recovered = Reconstruct(pp, z_shares)
+
+        print(f"\n--- MULT_SHARES WITH SUBSET (t={2*t-1}) ---")
+        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        self.assertEqual(recovered, expected)
+        print("Secret correctly reconstructed!")
+
 
 
 
