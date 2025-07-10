@@ -1,6 +1,21 @@
+"""
+Operations on Shares for Shamir Secret Sharing
+
+Based on:
+  Daniel Kales, "Secret Sharing", Graz University of Technology.
+  https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
+
+Implements:
+  - add_shares(pp, x_shares, y_shares): adds two shares modulo pp
+  - mul_shares(pp, x_shares, y_shares): multiplies two shares modulo pp (without degree reduction)
+
+Note:
+  - Operations assume that shares correspond to polynomials over GF(pp)
+  - Addition is linear and preserves the threshold
+  - Multiplication increases the degree of the polynomial, which increase the minimum threshold (t) required to reconstruct the secret.
+"""
+
 import numpy as np
-from sympy import Matrix
-import random
 
 from shamir import Share, Reconstruct
 

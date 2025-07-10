@@ -9,7 +9,7 @@ https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
 ## Files
 
 - `shamir.py` - contains the implementation
-- `test.py` - unit tests with different field sizes
+- `test.py` - unit tests with different field sizes and operations
 - `operations.py` - provides addition and multiplication of shares
 
 ## Dependencies
