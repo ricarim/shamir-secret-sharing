@@ -15,7 +15,8 @@ Note:
   - Multiplication increases the degree of the polynomial, which increase the minimum threshold (t) required to reconstruct the secret.
 """
 
-import numpy as np
+from sympy import Matrix
+import random
 
 from shamir import Share, Reconstruct
 
@@ -44,4 +45,35 @@ def mult_shares(pp, x_shares, y_shares):
         z_shares.append((ix,zi))
 
     return z_shares
+
+
+def degree_reduction(pp, z_shares, t):
+    n = len(z_shares)
+    xs = [ x for x, _ in z_shares]
+    ys = [ y for _, y in z_shares]
+
+    B = vandermonde_matrix(pp, xs, n)     
+
+    P = projection_matrix(pp, n , t)
+
+    B_inv = B.inv_mod(pp)
+
+    A = (B * P * B_inv) % pp
+
+    S = Matrix(ys)
+    R = (A * S) % pp
+
+    new_shares = list(zip(xs, [int(v) for v in R]))
+    return new_shares
+        
+
+def vandermonde_matrix(pp, xs, n):
+    return Matrix([[pow(x, j, pp) for j in range(n)] for x in xs])
+
+def projection_matrix(pp, n, t):
+    matrix = Matrix.zeros(n, n)
+    for i in range(t):
+        matrix[i, i] = 1
+    return matrix 
+
 

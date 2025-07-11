@@ -2,7 +2,7 @@ import unittest
 import random
 
 from shamir import Share, Reconstruct
-from operations import add_shares, mult_shares
+from operations import add_shares, mult_shares, degree_reduction
 
 
 class TestShamir(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestShamir(unittest.TestCase):
         z_shares = add_shares(pp, x_shares, y_shares)
         recovered = Reconstruct(pp, z_shares)
 
-        print(f"\n--- ADDITION OF SHARES TEST ---")
+        print(f"\n--- ADD_SHARES TEST ---")
         print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
@@ -79,13 +79,13 @@ class TestShamir(unittest.TestCase):
         x_shares = Share(pp, x, n, t)
         y_shares = Share(pp, y, n, t)
 
+        z_shares = add_shares(pp, x_shares, y_shares)
+
         # Select t common indices for both subsets
         subset_indices = sorted(random.sample(range(1, n+1), t))
-        x_subset = sorted([s for s in x_shares if s[0] in subset_indices], key=lambda s: s[0])
-        y_subset = sorted([s for s in y_shares if s[0] in subset_indices], key=lambda s: s[0])
+        z_subset = sorted([s for s in z_shares if s[0] in subset_indices], key=lambda s: s[0])
 
-        z_shares = add_shares(pp, x_subset, y_subset)
-        recovered = Reconstruct(pp, z_shares) 
+        recovered = Reconstruct(pp, z_subset) 
 
         print(f"\n--- ADD_SHARES WITH SUBSET (t={t}) ---")
         print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
@@ -108,12 +108,12 @@ class TestShamir(unittest.TestCase):
         x_shares = Share(pp, x, n, t)
         y_shares = Share(pp, y, n, t)
 
-        subset_indices = sorted(random.sample(range(1, n+1), t))
-        x_subset = sorted([s for s in x_shares if s[0] in subset_indices], key=lambda s: s[0])
-        y_subset = sorted([s for s in y_shares if s[0] in subset_indices], key=lambda s: s[0])
+        z_shares = mult_shares(pp, x_shares, y_shares)
 
-        z_shares = mult_shares(pp, x_subset, y_subset)
-        recovered = Reconstruct(pp, z_shares)
+        subset_indices = sorted(random.sample(range(1, n+1), t))
+        z_subset = sorted([s for s in z_shares if s[0] in subset_indices], key=lambda s: s[0])
+
+        recovered = Reconstruct(pp, z_subset)
 
         print(f"\n--- MULT_SHARES WITH SUBSET (t={t}) ---")
         print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
@@ -136,19 +136,47 @@ class TestShamir(unittest.TestCase):
         x_shares = Share(pp, x, n, t)
         y_shares = Share(pp, y, n, t)
 
+        z_shares = mult_shares(pp, x_shares, y_shares)
+        
         subset_indices = sorted(random.sample(range(1, n+1), 2*t-1))
-        x_subset = sorted([s for s in x_shares if s[0] in subset_indices], key=lambda s: s[0])
-        y_subset = sorted([s for s in y_shares if s[0] in subset_indices], key=lambda s: s[0])
+        z_subset = sorted([s for s in z_shares if s[0] in subset_indices], key=lambda s: s[0])
 
-        z_shares = mult_shares(pp, x_subset, y_subset)
-        recovered = Reconstruct(pp, z_shares)
+        recovered = Reconstruct(pp, z_subset)
 
         print(f"\n--- MULT_SHARES WITH SUBSET (t={2*t-1}) ---")
         print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
 
+    def test_mult_shares_with_degree_reduction(self):
+        """
+        Test that multiplying two Shamir sharings and then applying degree reduction
+        allows the secret to be reconstructed using only t shares.
+        """
 
+        pp = 67
+        n = 5
+        t = 2 
+        x = 3
+        y = 4 
+        expected = ( x * y ) % pp
+
+        x_shares = Share(pp, x, n, t)
+        y_shares = Share(pp, y, n, t)
+
+        z_shares = mult_shares(pp, x_shares, y_shares)
+
+        reduced_shares = degree_reduction(pp, z_shares, t)
+
+        subset_indices = sorted(random.sample(range(1, n+1), t))
+        reduced_subset = sorted([s for s in reduced_shares if s[0] in subset_indices], key=lambda s: s[0])
+
+        recovered = Reconstruct(pp, reduced_subset)
+
+        print(f"\n--- MULT_SHARES WITH DEGREE REDUCTION (t={t}) ---")
+        print(f"x = {x}, y = {y}, expected x * y = {expected}, reconstructed = {recovered}")
+        self.assertEqual(recovered, expected)
+        print("Secret correctly reconstructed after degree reduction!")
 
 
 if __name__ == "__main__":

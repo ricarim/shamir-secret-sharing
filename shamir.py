@@ -26,10 +26,7 @@ def Share(pp, x, n, t):
     if pp <= n: 
         raise ValueError("The size of the finite field 'F_pp' must be greater than the number of shares 'n'.")
 
-    coeffs = [x]
-
-    for i in range(1, t):
-        coeffs.append(random.randint(0, pp-1))
+    coeffs = [x] + [random.randint(0, pp - 1) for _ in range(1, t)]
 
     shares = []
     for i in range(1, n+1):
