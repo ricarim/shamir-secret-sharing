@@ -63,16 +63,21 @@ def degree_reduction(pp, z_shares, t):
     B_inv = B.inv_mod(pp)
     A = (B * P * B_inv) % pp
 
-    # Randomize coefficients in order to be more secure
+    # Randomize in order to hide intermediate coefficients
     max_deg = 2*(t-1)
     q_coeffs = [0]
     for k in range(1, max_deg+1):
-        total = sum(random.randrange(pp) for _ in range(n)) % pp
+        total = sum(random.randint(0, pp - 1) for _ in range(n)) % pp
         q_coeffs.append(total)
 
+    # Creating new randomized shares 
     randomized = []
     for xi, zi in z_shares:
-        qi = sum(q_coeffs[k] * pow(xi, k, pp) for k in range(1, max_deg+1)) % pp
+        qi = 0
+        for k in range(1, max_deg + 1):
+            term = (q_coeffs[k] * pow(xi, k, pp)) % pp
+            qi = (qi + term) % pp
+
         randomized.append((xi, (zi + qi) % pp))
 
     # Apply degree reduction
