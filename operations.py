@@ -2,17 +2,23 @@
 Operations on Shares for Shamir Secret Sharing
 
 Based on:
-  Daniel Kales, "Secret Sharing", Graz University of Technology.
-  https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
+  - Daniel Kales, "Secret Sharing", Graz University of Technology.
+    https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
+  - Michael Ben-Or, Shafi Goldwasser, and Avi Wigderson,
+    "Completeness Theorems for Non-Cryptographic Fault-Tolerant Distributed Computation",
+    Proceedings of the 20th ACM Symposium on Theory of Computing (STOC), 1988.
+    https://doi.org/10.1145/62212.62213
 
 Implements:
   - add_shares(pp, x_shares, y_shares): adds two shares modulo pp
-  - mul_shares(pp, x_shares, y_shares): multiplies two shares modulo pp (without degree reduction)
+  - mult_shares(pp, x_shares, y_shares): multiplies two shares modulo pp (without degree reduction)
+  - degree_reduction(pp, z_shares, t): reduces the degree of a Shamir sharing using BGW
 
 Note:
   - Operations assume that shares correspond to polynomials over GF(pp)
   - Addition is linear and preserves the threshold
   - Multiplication increases the degree of the polynomial, which increase the minimum threshold (t) required to reconstruct the secret.
+  - BGW degree reduction is needed to restore the original threshold (t)
 """
 
 from sympy import Matrix
@@ -46,7 +52,6 @@ def mult_shares(pp, x_shares, y_shares):
 
     return z_shares
 
-
 def degree_reduction(pp, z_shares, t):
     n = len(z_shares)
     xs = [ x for x, _ in z_shares]
@@ -65,7 +70,6 @@ def degree_reduction(pp, z_shares, t):
 
     new_shares = list(zip(xs, [int(v) for v in R]))
     return new_shares
-        
 
 def vandermonde_matrix(pp, xs, n):
     return Matrix([[pow(x, j, pp) for j in range(n)] for x in xs])

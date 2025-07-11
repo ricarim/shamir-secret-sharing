@@ -2,8 +2,8 @@
 Shamir Secret Sharing Scheme 
 
 Based on:
-  Daniel Kales, "Secret Sharing", Graz University of Technology.
-  https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
+  - Daniel Kales, "Secret Sharing", Graz University of Technology.
+    https://www.isec.tugraz.at/wp-content/uploads/teaching/mfc/secret_sharing.pdf
 
 Implements:
   - Share(pp, x, n, t): splits a secret x into n shares with reconstruction threshold t

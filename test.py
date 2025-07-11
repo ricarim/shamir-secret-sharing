@@ -48,6 +48,7 @@ class TestShamir(unittest.TestCase):
 
         pp = 103 
         n = 5
+        t = n
         x = 33
         y = 42
         expected = ( x + y ) % pp
@@ -59,7 +60,13 @@ class TestShamir(unittest.TestCase):
         recovered = Reconstruct(pp, z_shares)
 
         print(f"\n--- ADD_SHARES TEST ---")
-        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        print(f"p = {pp}, n = {n}, t = {t}, expected product = {expected}")
+        print(f"x = {x}, y = {y}")
+        print(f"x_shares: {x_shares}")
+        print(f"y_shares: {y_shares}")
+        print(f"z_shares (after add): {z_shares}")
+        print(f"reconstructed = {recovered}")
+
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
 
@@ -87,8 +94,16 @@ class TestShamir(unittest.TestCase):
 
         recovered = Reconstruct(pp, z_subset) 
 
-        print(f"\n--- ADD_SHARES WITH SUBSET (t={t}) ---")
-        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        print(f"\n--- ADD_SHARES WITH SUBSET ---")
+        print(f"p = {pp}, n = {n}, t = {t}, expected product = {expected}")
+        print(f"x = {x}, y = {y}")
+        print(f"x_shares: {x_shares}")
+        print(f"y_shares: {y_shares}")
+        print(f"z_shares (after add): {z_shares}")
+        print(f"subset_indices used for reconstruction: {subset_indices}")
+        print(f"z_subset used: {z_subset}")
+        print(f"reconstructed = {recovered}")
+
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
 
@@ -115,8 +130,16 @@ class TestShamir(unittest.TestCase):
 
         recovered = Reconstruct(pp, z_subset)
 
-        print(f"\n--- MULT_SHARES WITH SUBSET (t={t}) ---")
-        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        print(f"\n--- MULT_SHARES WITH SUBSET ERROR ---")
+        print(f"p = {pp}, n = {n}, t = {t}, expected product = {expected}")
+        print(f"x = {x}, y = {y}")
+        print(f"x_shares: {x_shares}")
+        print(f"y_shares: {y_shares}")
+        print(f"z_shares (degree 2*t-1): {z_shares}")
+        print(f"subset_indices used for reconstruction: {subset_indices}")
+        print(f"z_subset used: {z_subset}")
+        print(f"reconstructed = {recovered}")
+
         self.assertNotEqual(recovered, expected)
         print("Secret NOT reconstructed because the polynomial degree has grown and now it needs (2*t - 1) unique shares to reconstruct the secret!")
 
@@ -143,8 +166,16 @@ class TestShamir(unittest.TestCase):
 
         recovered = Reconstruct(pp, z_subset)
 
-        print(f"\n--- MULT_SHARES WITH SUBSET (t={2*t-1}) ---")
-        print(f"x = {x}, y = {y}, expected x + y = {expected}, reconstructed = {recovered}")
+        print(f"\n--- MULT_SHARES WITH SUBSET CORRECT ---")
+        print(f"p = {pp}, n = {n}, t = {t}, expected product = {expected}")
+        print(f"x = {x}, y = {y}")
+        print(f"x_shares: {x_shares}")
+        print(f"y_shares: {y_shares}")
+        print(f"z_shares (degree 2*t-1): {z_shares}")
+        print(f"subset_indices used for reconstruction: {subset_indices}")
+        print(f"z_subset used: {z_subset}")
+        print(f"reconstructed = {recovered}")
+
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed!")
 
@@ -173,8 +204,17 @@ class TestShamir(unittest.TestCase):
 
         recovered = Reconstruct(pp, reduced_subset)
 
-        print(f"\n--- MULT_SHARES WITH DEGREE REDUCTION (t={t}) ---")
-        print(f"x = {x}, y = {y}, expected x * y = {expected}, reconstructed = {recovered}")
+        print(f"\n--- MULT_SHARES WITH DEGREE REDUCTION ---")
+        print(f"p = {pp}, n = {n}, t = {t}, expected product = {expected}")
+        print(f"x = {x}, y = {y}")
+        print(f"x_shares: {x_shares}")
+        print(f"y_shares: {y_shares}")
+        print(f"z_shares (after mult): {z_shares}")
+        print(f"reduced_shares (after degree reduction): {reduced_shares}")
+        print(f"subset_indices used for reconstruction: {subset_indices}")
+        print(f"reduced_subset used: {reduced_subset}")
+        print(f"reconstructed = {recovered}")
+
         self.assertEqual(recovered, expected)
         print("Secret correctly reconstructed after degree reduction!")
 
