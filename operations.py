@@ -12,7 +12,7 @@ Based on:
 Implements:
   - add_shares(pp, x_shares, y_shares): adds two shares modulo pp
   - mult_shares(pp, x_shares, y_shares): multiplies two shares modulo pp (without degree reduction)
-  - degree_reduction(pp, z_shares, t): reduces the degree of a Shamir sharing using BGW
+  - degree_reduction(pp, z_shares, t): reduces the degree of a Shamir sharing using BGW (including the randomization step to protect intermediate coefficients)
 
 Note:
   - Operations assume that shares correspond to polynomials over GF(pp)
@@ -57,15 +57,26 @@ def degree_reduction(pp, z_shares, t):
     xs = [ x for x, _ in z_shares]
     ys = [ y for _, y in z_shares]
 
+    # Construct the truncation matrix 
     B = vandermonde_matrix(pp, xs, n)     
-
     P = projection_matrix(pp, n , t)
-
     B_inv = B.inv_mod(pp)
-
     A = (B * P * B_inv) % pp
 
-    S = Matrix(ys)
+    # Randomize coefficients in order to be more secure
+    max_deg = 2*(t-1)
+    q_coeffs = [0]
+    for k in range(1, max_deg+1):
+        total = sum(random.randrange(pp) for _ in range(n)) % pp
+        q_coeffs.append(total)
+
+    randomized = []
+    for xi, zi in z_shares:
+        qi = sum(q_coeffs[k] * pow(xi, k, pp) for k in range(1, max_deg+1)) % pp
+        randomized.append((xi, (zi + qi) % pp))
+
+    # Apply degree reduction
+    S = Matrix([yi for _, yi in randomized])
     R = (A * S) % pp
 
     new_shares = list(zip(xs, [int(v) for v in R]))
