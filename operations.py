@@ -26,6 +26,12 @@ import random
 
 from shamir import Share, Reconstruct
 
+def share_to(pp, t, share, n, new_t=None):
+    if new_t is None:
+        new_t = t
+
+    return Share(pp, share, n, new_t)
+
 def add_shares(pp, x_shares, y_shares):
     if len(x_shares) != len(y_shares):
         raise ValueError("Both shares must have the same number of elements")
@@ -51,6 +57,15 @@ def mult_shares(pp, x_shares, y_shares):
         z_shares.append((ix,zi))
 
     return z_shares
+
+def vandermonde_matrix(pp, xs, n):
+    return Matrix([[pow(x, j, pp) for j in range(n)] for x in xs])
+
+def projection_matrix(pp, n, t):
+    matrix = Matrix.zeros(n, n)
+    for i in range(t):
+        matrix[i, i] = 1
+    return matrix 
 
 def degree_reduction(pp, z_shares, t):
     n = len(z_shares)
@@ -87,13 +102,5 @@ def degree_reduction(pp, z_shares, t):
     new_shares = list(zip(xs, [int(v) for v in R]))
     return new_shares
 
-def vandermonde_matrix(pp, xs, n):
-    return Matrix([[pow(x, j, pp) for j in range(n)] for x in xs])
-
-def projection_matrix(pp, n, t):
-    matrix = Matrix.zeros(n, n)
-    for i in range(t):
-        matrix[i, i] = 1
-    return matrix 
-
-
+    
+    

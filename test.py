@@ -2,19 +2,23 @@ import unittest
 import random
 
 from shamir import Share, Reconstruct
-from operations import add_shares, mult_shares, degree_reduction
+from operations import share_to, add_shares, mult_shares, degree_reduction
 
 
 class TestShamir(unittest.TestCase):
+    def generate_shares(self, pp, x, n, t):
+        shares = Share(pp, x, n, t)
+        print("Generated shares:")
+        for s in shares:
+            print(f"  Share: {s}")
+
+        return shares
 
     def run_shamir(self, pp, x, n, t, label):
         print(f"\n--- {label} ---")
         print(f"Field: GF({pp}) | Secret: {x} | n: {n} | t: {t}")
 
-        shares = Share(pp, x, n, t)
-        print("Generated shares:")
-        for s in shares:
-            print(f"  Share: {s}")
+        shares = self.generate_shares(pp, x, n, t)
 
         subset = random.sample(shares, t)
         print(f"Using subset: {subset}")
@@ -38,6 +42,39 @@ class TestShamir(unittest.TestCase):
 
     def test_max_secret(self):
         self.run_shamir(pp=257, x=256, n=7, t=3, label="SECRET = p - 1")
+
+    def test_share_to(self):
+        """
+        Test the redistribution of shares
+        """
+
+        pp = 257
+        x = 200
+        n = 5
+        t = 2
+        m = 3
+
+        print(f"\n--- SHARE_TO TEST ---")
+        print(f"Field: GF({pp}) | Secret: {x} | n: {n} | m: {m} | t: {t}")
+
+        shares = self.generate_shares(pp, x, n, t)
+
+        share = random.sample(shares, 1)[0]
+        print(f"Using share for redistribution: {share}")
+     
+        subshares = share_to(pp, t, share[1], m)
+        print("Generated sub-shares (with the same threshold & size = m):")
+        for s in subshares:
+            print(f"  Share: {s}")
+
+        subset = random.sample(subshares, t)
+        print(f"Using sub-shares for reconstruction: {subset}")
+
+        reconstructed = Reconstruct(pp, subset)
+        print(f"Reconstructed secret: {reconstructed}")
+        self.assertEqual(reconstructed, share[1])
+        print("Secret correctly reconstructed!")
+        
     
     def test_add_shares(self):
         """
